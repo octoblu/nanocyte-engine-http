@@ -1,4 +1,4 @@
-debug = require('debug')('nanocyte-engine-simple:messages-controller')
+debug = require('debug')('nanocyte-engine-http:messages-controller')
 
 class MessagesController
   constructor: ({@client}={}) ->
@@ -14,6 +14,8 @@ class MessagesController
       message: req.body
 
     messageStr = JSON.stringify message
+
+    debug '@client.lpush', 'request:queue', messageStr
 
     @client.lpush 'request:queue', messageStr, (error) =>
       return res.status(500).send(error) if error?
