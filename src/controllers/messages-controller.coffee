@@ -15,7 +15,7 @@ class MessagesController
 
     messageStr = JSON.stringify message
 
-    @client 'lpush', 'request:queue', messageStr, (error) =>
+    @client.lpush 'request:queue', messageStr, (error) =>
       return res.status(500).send(error) if error?
 
       res.status(201).end()
