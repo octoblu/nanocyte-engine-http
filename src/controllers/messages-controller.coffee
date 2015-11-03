@@ -11,6 +11,7 @@ class MessagesController
       metadata:
         flowId: req.params.flowId
         instanceId: req.params.instanceId
+        toNodeId: 'engine-input'
       message: req.body
 
     messageStr = JSON.stringify message
