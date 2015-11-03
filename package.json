@@ -1,6 +1,6 @@
 {
   "name": "nanocyte-engine-http",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "HTTP server for Nanocyte that dumps messages into a queue",
   "main": "server.js",
   "scripts": {
@@ -25,6 +25,7 @@
     "chai": "^3.4.0",
     "coffee-coverage": "^0.7.0",
     "coffee-script": "^1.10.0",
+    "fakeredis": "^0.3.4",
     "istanbul": "^0.4.0",
     "mocha": "^2.3.3",
     "mocha-istanbul": "^0.2.0",
@@ -41,5 +42,8 @@
     "morgan": "^1.6.1",
     "redis": "^2.3.0",
     "redis-ns": "^0.1.1"
+  },
+  "optionalDependencies": {
+    "hiredis": "^0.4.1"
   }
 }
