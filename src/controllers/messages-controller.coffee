@@ -7,20 +7,24 @@ class MessagesController
     unless req.header('X-MESHBLU-UUID') == req.params.flowId
       return res.status(403).end()
 
+    {flowId} = req.params
+
     message =
       metadata:
-        flowId: req.params.flowId
+        flowId: flowId
         instanceId: req.params.instanceId
         toNodeId: 'engine-input'
       message: req.body
 
     messageStr = JSON.stringify message
 
-    debug '@client.lpush', 'request:queue', messageStr
+    @client.get "request-queue-name:#{flowId}", (error, requestQueueName) =>
+      requestQueueName ?= 'request:queue'
 
-    @client.lpush 'request:queue', messageStr, (error) =>
-      return res.status(500).send(error) if error?
+      debug '@client.lpush', requestQueueName, messageStr
+      @client.lpush requestQueueName, messageStr, (error) =>
+        return res.status(500).send(error) if error?
 
-      res.status(201).end()
+        res.status(201).end()
 
 module.exports = MessagesController
