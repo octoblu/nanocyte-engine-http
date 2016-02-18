@@ -19,9 +19,9 @@ messagesController = new MessagesController client: client
 PORT  = process.env.PORT ? 80
 
 app = express()
+app.use meshbluHealthcheck()
 app.use morgan('dev', immediate: false)
 app.use errorHandler()
-app.use meshbluHealthcheck()
 app.use httpSignature.verify pub: publicKey.publicKey
 app.use httpSignature.gateway()
 app.use bodyParser.urlencoded limit: '50mb', extended : true
@@ -34,3 +34,7 @@ server = app.listen PORT, ->
   port = server.address().port
 
   console.log "Server running on #{host}:#{port}"
+
+process.on 'SIGTERM', =>
+  console.log 'SIGTERM caught, exiting'
+  process.exit 0
