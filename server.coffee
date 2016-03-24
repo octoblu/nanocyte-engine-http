@@ -20,7 +20,7 @@ PORT  = process.env.PORT ? 80
 
 app = express()
 app.use meshbluHealthcheck()
-app.use morgan('dev', immediate: false)
+app.use morgan('dev', immediate: false) unless process.env.DISABLE_LOGGING == "true"
 app.use errorHandler()
 app.use httpSignature.verify pub: publicKey.publicKey
 app.use httpSignature.gateway()
