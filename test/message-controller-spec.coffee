@@ -39,3 +39,35 @@ describe 'MessagesController', ->
 
     it 'should send a 201', ->
       expect(@res.status).to.have.been.calledWith 201
+
+  context 'when given a x-meshblu-route header', ->
+    beforeEach (done) ->
+      req =
+        header: sinon.stub()
+        params:
+          flowId: 'sour'
+        body: {devices: ['*']}
+
+      req.header.withArgs('X-MESHBLU-UUID').returns 'sour'
+      req.header.withArgs('X-MESHBLU-ROUTE').returns JSON.stringify [from: 'abcd']
+      @res.end = => done()
+
+      @sut.create req, @res
+
+    it 'should send a 201', ->
+      expect(@res.status).to.have.been.calledWith 201
+
+    it 'should add the message to redis', (done) ->
+      expectedJob =
+        metadata:
+          flowId:'sour'
+          toNodeId:'engine-input'
+          fromUuid: 'abcd'
+        message:
+          devices: ['*']
+          fromUuid: 'abcd'
+
+      @client.rpop 'request:queue', (error, job) =>
+        return done error if error?
+        expect(JSON.parse job).to.deep.equal expectedJob
+        done()

@@ -1,3 +1,4 @@
+_ = require 'lodash'
 debug = require('debug')('nanocyte-engine-http:messages-controller')
 
 class MessagesController
@@ -7,13 +8,18 @@ class MessagesController
     unless req.header('X-MESHBLU-UUID') == req.params.flowId
       return res.status(403).end()
 
-    {flowId} = req.params
+    {flowId, instanceId} = req.params
+
+    req.body ?= {}
+    # get from headers in case it does not exist in the message
+    req.body.fromUuid ?= @_getFromUuidFromHeader req.header('X-MESHBLU-ROUTE')
 
     message =
       metadata:
         flowId: flowId
-        instanceId: req.params.instanceId
+        instanceId: instanceId
         toNodeId: 'engine-input'
+        fromUuid: req.body.fromUuid
       message: req.body
 
     messageStr = JSON.stringify message
@@ -26,5 +32,16 @@ class MessagesController
         return res.status(500).send(error) if error?
 
         res.status(201).end()
+
+
+  _getFromUuidFromHeader: (route) =>
+    return unless route?
+    try
+      route = JSON.parse route
+    catch
+      route = null
+
+    hop = _.first route
+    return hop.from if hop?
 
 module.exports = MessagesController
