@@ -10,17 +10,21 @@ class MessagesController
 
     {flowId, instanceId} = req.params
 
-    req.body ?= {}
-    # get from headers in case it does not exist in the message
-    req.body.fromUuid ?= @_getFromUuidFromHeader req.header('X-MESHBLU-ROUTE')
+    route           = @_parseIfPossible req.header 'X-MESHBLU-ROUTE'
+    forwardedRoutes = @_parseIfPossible req.header 'X-MESHBLU-FORWARDED-ROUTES'
+
+    body  = req.body ? {}
+    body.fromUuid ?= @_getFromUuidFromRoute route
 
     message =
       metadata:
         flowId: flowId
         instanceId: instanceId
         toNodeId: 'engine-input'
-        fromUuid: req.body.fromUuid
-      message: req.body
+        fromUuid: body.fromUuid # fromUuid must be both in message.metadata.fromUuid and  message.message.fromUuid
+        route: route
+        forwardedRoutes: forwardedRoutes
+      message: body
 
     messageStr = JSON.stringify message
 
@@ -33,15 +37,13 @@ class MessagesController
 
         res.status(201).end()
 
-
-  _getFromUuidFromHeader: (route) =>
-    return unless route?
-    try
-      route = JSON.parse route
-    catch
-      route = null
-
+  _getFromUuidFromRoute: (route) =>
     hop = _.first route
     return hop.from if hop?
+
+  _parseIfPossible: (str) =>
+    return unless str
+    try
+      JSON.parse str
 
 module.exports = MessagesController

@@ -1,10 +1,8 @@
-fs                 = require 'fs'
 morgan             = require 'morgan'
 express            = require 'express'
 bodyParser         = require 'body-parser'
 errorHandler       = require 'errorhandler'
 meshbluHealthcheck = require 'express-meshblu-healthcheck'
-debug              = require('debug')('nanocyte-engine-http:server')
 httpSignature      = require '@octoblu/connect-http-signature'
 MessagesController = require './src/controllers/messages-controller'
 redis              = require 'redis'
