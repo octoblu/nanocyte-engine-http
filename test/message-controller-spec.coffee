@@ -66,7 +66,8 @@ describe 'MessagesController', ->
           flowId:'sour'
           toNodeId:'engine-input'
           fromUuid: 'abcd'
-          route: [{from: 'abcd'}]
+          metadata:
+            route: [{from: 'abcd'}]
         message:
           devices: ['*']
           fromUuid: 'abcd'
@@ -102,7 +103,8 @@ describe 'MessagesController', ->
           flowId:'sour'
           toNodeId:'engine-input'
           fromUuid: 'from-uuid'
-          forwardedRoutes: [[{from: 'abcd'}]]
+          metadata:
+            forwardedRoutes: [[{from: 'abcd'}]]
         message:
           devices: ['*']
           fromUuid: 'from-uuid'
