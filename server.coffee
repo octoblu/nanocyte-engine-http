@@ -5,12 +5,12 @@ errorHandler       = require 'errorhandler'
 meshbluHealthcheck = require 'express-meshblu-healthcheck'
 httpSignature      = require '@octoblu/connect-http-signature'
 MessagesController = require './src/controllers/messages-controller'
-redis              = require 'redis'
-RedisNS            = require 'redis-ns'
+redis              = require 'ioredis'
+RedisNS            = require '@octoblu/redis-ns'
 publicKey          = require './public-key.json'
 expressVersion     = require 'express-package-version'
 
-redisClient = redis.createClient process.env.REDIS_URI
+redisClient = redis.createClient process.env.REDIS_URI, dropBufferSupport: true
 client = new RedisNS 'nanocyte-engine', redisClient
 
 messagesController = new MessagesController client: client
