@@ -34,6 +34,7 @@ class MessagesController
 
       debug '@client.lpush', requestQueueName, envelopeStr
       @client.lpush requestQueueName, envelopeStr, (error) =>
+        console.error error.message if error?
         return res.status(500).send(error) if error?
 
         res.status(201).end()
