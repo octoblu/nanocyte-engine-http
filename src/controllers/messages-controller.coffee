@@ -30,6 +30,9 @@ class MessagesController
     envelopeStr = JSON.stringify envelope
 
     @client.get "request-queue-name:#{flowId}", (error, requestQueueName) =>
+      console.error error.stack if error?
+      return res.status(500).end() if error?
+
       requestQueueName ?= 'request:queue'
 
       return res.status(423).end() if requestQueueName == 'request:blackhole'
