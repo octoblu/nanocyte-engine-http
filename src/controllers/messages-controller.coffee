@@ -32,6 +32,8 @@ class MessagesController
     @client.get "request-queue-name:#{flowId}", (error, requestQueueName) =>
       requestQueueName ?= 'request:queue'
 
+      return res.status(423).end() if requestQueueName == 'request:blackhole'
+
       debug '@client.lpush', requestQueueName, envelopeStr
       @client.lpush requestQueueName, envelopeStr, (error) =>
         console.error error.message if error?

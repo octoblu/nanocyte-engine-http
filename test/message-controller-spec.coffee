@@ -43,6 +43,24 @@ describe 'MessagesController', ->
     it 'should send a 201', ->
       expect(@res.status).to.have.been.calledWith 201
 
+  context 'when given a blackholed flowid', ->
+    beforeEach (done) ->
+      @client.set 'request-queue-name:blocked', 'request:blackhole', done
+      
+    beforeEach (done) ->
+      req =
+        header: sinon.stub()
+        params:
+          flowId: 'blocked'
+
+      req.header.withArgs('X-MESHBLU-UUID').returns 'blocked'
+      @res.end = => done()
+
+      @sut.create req, @res
+
+    it 'should send a 423', ->
+      expect(@res.status).to.have.been.calledWith 423
+
   context 'when given a x-meshblu-route header', ->
     beforeEach (done) ->
       req =
