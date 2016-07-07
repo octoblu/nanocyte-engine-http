@@ -3,6 +3,24 @@ debug = require('debug')('nanocyte-engine-http:messages-controller')
 
 class MessagesController
   constructor: ({@client}={}) ->
+    @maxQueueLength = 0
+    @updateMaxQueueLength()
+    @interval = setInterval @updateMaxQueueLength, 60*1000
+
+  updateMaxQueueLength: (callback=->) =>
+    @client.get 'request:max-queue-length', (error, result) =>
+      @maxQueueLength = parseInt(result ? 0)
+      callback error
+
+  _checkMaxQueueLength: ({requestQueue}, callback) =>
+    return callback() unless @maxQueueLength > 0
+    @client.llen requestQueue, (error, queueLength) =>
+      return callback error if error?
+      return callback() if queueLength <= @maxQueueLength
+
+      error = new Error 'Maximum Capacity Exceeded'
+      error.code = 503
+      callback error
 
   create: (req, res) =>
     unless req.header('X-MESHBLU-UUID') == req.params.flowId
@@ -16,33 +34,35 @@ class MessagesController
     message  = req.body ? {}
     message.fromUuid ?= @_getFromUuidFromRoute route
 
-    envelope =
-      metadata:
-        flowId: flowId
-        instanceId: instanceId
-        toNodeId: 'engine-input'
-        fromUuid: message.fromUuid # fromUuid must be both in envelope.metadata.fromUuid and  envelope.message.fromUuid
-        metadata:
-          route: route
-          forwardedRoutes: forwardedRoutes
-      message: message
-
-    envelopeStr = JSON.stringify envelope
-
-    @client.get "request-queue-name:#{flowId}", (error, requestQueueName) =>
+    @client.get "request-queue-name:#{flowId}", (error, requestQueue) =>
       console.error error.stack if error?
-      return res.status(500).end() if error?
+      return res.status(500).send() if error?
 
-      requestQueueName ?= 'request:queue'
+      requestQueue ?= 'request:queue'
 
-      return res.status(423).end() if requestQueueName == 'request:blackhole'
+      return res.status(423).end() if requestQueue == 'request:blackhole'
 
-      debug '@client.lpush', requestQueueName, envelopeStr
-      @client.lpush requestQueueName, envelopeStr, (error) =>
-        console.error error.message if error?
-        return res.status(500).send(error) if error?
+      @_checkMaxQueueLength {requestQueue}, (error) =>
+        return res.status(error.code).send(error) if error?
 
-        res.status(201).end()
+        envelope =
+          message: message
+          metadata:
+            flowId: flowId
+            instanceId: instanceId
+            toNodeId: 'engine-input'
+            fromUuid: message.fromUuid # fromUuid must be both in envelope.metadata.fromUuid and  envelope.message.fromUuid
+            metadata:
+              route: route
+              forwardedRoutes: forwardedRoutes
+
+        envelopeStr = JSON.stringify envelope
+        debug '@client.lpush', requestQueue, envelopeStr
+        @client.lpush requestQueue, envelopeStr, (error) =>
+          console.error error.message if error?
+          return res.status(500).send(error) if error?
+
+          res.status(201).end()
 
   _getFromUuidFromRoute: (route) =>
     hop = _.first route

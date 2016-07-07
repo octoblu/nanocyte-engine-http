@@ -46,7 +46,7 @@ describe 'MessagesController', ->
   context 'when given a blackholed flowid', ->
     beforeEach (done) ->
       @client.set 'request-queue-name:blocked', 'request:blackhole', done
-      
+
     beforeEach (done) ->
       req =
         header: sinon.stub()
@@ -60,6 +60,33 @@ describe 'MessagesController', ->
 
     it 'should send a 423', ->
       expect(@res.status).to.have.been.calledWith 423
+
+  context 'when max-queue-length is exceeded', ->
+    beforeEach (done) ->
+      @client.set 'request:max-queue-length', 1, done
+
+    beforeEach (done) ->
+      @client.lpush 'request:queue', 'foo', done
+
+    beforeEach (done) ->
+      @client.lpush 'request:queue', 'foo', done
+
+    beforeEach (done) ->
+      @sut.updateMaxQueueLength done
+
+    beforeEach (done) ->
+      req =
+        header: sinon.stub()
+        params:
+          flowId: 'exceeded'
+
+      req.header.withArgs('X-MESHBLU-UUID').returns 'exceeded'
+      @res.send = => done()
+
+      @sut.create req, @res
+
+    it 'should send a 503', ->
+      expect(@res.status).to.have.been.calledWith 503
 
   context 'when given a x-meshblu-route header', ->
     beforeEach (done) ->

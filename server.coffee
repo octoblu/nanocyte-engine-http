@@ -13,7 +13,7 @@ expressVersion     = require 'express-package-version'
 redisClient = redis.createClient process.env.REDIS_URI, dropBufferSupport: true
 client = new RedisNS 'nanocyte-engine', redisClient
 
-messagesController = new MessagesController client: client
+messagesController = new MessagesController {client}
 
 PORT  = process.env.PORT ? 80
 
