@@ -2,6 +2,8 @@ morgan             = require 'morgan'
 express            = require 'express'
 bodyParser         = require 'body-parser'
 errorHandler       = require 'errorhandler'
+compression        = require 'compression'
+OctobluRaven       = require 'octoblu-raven'
 meshbluHealthcheck = require 'express-meshblu-healthcheck'
 httpSignature      = require '@octoblu/connect-http-signature'
 MessagesController = require './src/controllers/messages-controller'
@@ -16,11 +18,17 @@ client = new RedisNS 'nanocyte-engine', redisClient
 messagesController = new MessagesController {client}
 
 PORT  = process.env.PORT ? 80
+octobluRaven = new OctobluRaven()
+octobluRaven.patchGlobal()
 
 app = express()
+app.use compression()
+app.use octobluRaven.express().handleErrors()
 app.use meshbluHealthcheck()
 app.use expressVersion({format: '{"version": "%s"}'})
-app.use morgan('dev', immediate: false) unless process.env.DISABLE_LOGGING == "true"
+skip = (request, response) =>
+  return response.statusCode < 400
+app.use morgan 'dev', { immediate: false, skip } unless process.env.DISABLE_LOGGING == "true"
 app.use errorHandler()
 app.use httpSignature.verify pub: publicKey.publicKey
 app.use httpSignature.gateway()
@@ -33,8 +41,9 @@ server = app.listen PORT, ->
   host = server.address().address
   port = server.address().port
 
-  console.log "Server running on #{host}:#{port}"
+  console.log "Nanocyte Engine HTTP running on port #{port}"
 
 process.on 'SIGTERM', =>
   console.log 'SIGTERM caught, exiting'
-  process.exit 0
+  server.close =>
+    process.exit 0
