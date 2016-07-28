@@ -30,7 +30,7 @@ class MessagesController
 
     route           = @_parseIfPossible req.header 'X-MESHBLU-ROUTE'
     forwardedRoutes = @_parseIfPossible req.header 'X-MESHBLU-FORWARDED-ROUTES'
-    messageType     = req.header 'X-MESHBLU-MESSAGE-TYPE'
+    messageType     = _.first(route)?.type
 
     message  = req.body ? {}
     message.fromUuid ?= @_getFromUuidFromRoute route

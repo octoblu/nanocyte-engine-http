@@ -133,9 +133,9 @@ describe 'MessagesController', ->
           fromUuid: 'from-uuid'
         }
 
-      req.header.withArgs('X-MESHBLU-MESSAGE-TYPE').returns 'configure.received'
       req.header.withArgs('X-MESHBLU-UUID').returns 'sour'
       req.header.withArgs('X-MESHBLU-FORWARDED-ROUTES').returns JSON.stringify [[{from: 'abcd'}]]
+      req.header.withArgs('X-MESHBLU-ROUTE').returns JSON.stringify [{from: 'abcd', type: 'configure.received'}]
       @res.end = => done()
 
       @sut.create req, @res
@@ -151,6 +151,7 @@ describe 'MessagesController', ->
           fromUuid: 'from-uuid'
           messageType: 'configure.received'
           metadata:
+            route: [{from: 'abcd', type: 'configure.received'}]
             forwardedRoutes: [[{from: 'abcd'}]]
         message:
           devices: ['*']
