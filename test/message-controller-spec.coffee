@@ -149,7 +149,7 @@ describe 'MessagesController', ->
           flowId:'sour'
           toNodeId:'engine-input'
           fromUuid: 'from-uuid'
-          messageType: 'configure.received'
+          eventType: 'configure.received'
           metadata:
             route: [{from: 'abcd', type: 'configure.received'}]
             forwardedRoutes: [[{from: 'abcd'}]]
