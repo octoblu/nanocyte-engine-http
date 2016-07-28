@@ -30,6 +30,7 @@ class MessagesController
 
     route           = @_parseIfPossible req.header 'X-MESHBLU-ROUTE'
     forwardedRoutes = @_parseIfPossible req.header 'X-MESHBLU-FORWARDED-ROUTES'
+    messageType     = req.header 'X-MESHBLU-MESSAGE-TYPE'
 
     message  = req.body ? {}
     message.fromUuid ?= @_getFromUuidFromRoute route
@@ -52,6 +53,7 @@ class MessagesController
             instanceId: instanceId
             toNodeId: 'engine-input'
             fromUuid: message.fromUuid # fromUuid must be both in envelope.metadata.fromUuid and  envelope.message.fromUuid
+            messageType: messageType
             metadata:
               route: route
               forwardedRoutes: forwardedRoutes

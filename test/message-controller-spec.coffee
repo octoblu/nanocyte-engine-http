@@ -133,6 +133,7 @@ describe 'MessagesController', ->
           fromUuid: 'from-uuid'
         }
 
+      req.header.withArgs('X-MESHBLU-MESSAGE-TYPE').returns 'configure.received'
       req.header.withArgs('X-MESHBLU-UUID').returns 'sour'
       req.header.withArgs('X-MESHBLU-FORWARDED-ROUTES').returns JSON.stringify [[{from: 'abcd'}]]
       @res.end = => done()
@@ -148,6 +149,7 @@ describe 'MessagesController', ->
           flowId:'sour'
           toNodeId:'engine-input'
           fromUuid: 'from-uuid'
+          messageType: 'configure.received'
           metadata:
             forwardedRoutes: [[{from: 'abcd'}]]
         message:
