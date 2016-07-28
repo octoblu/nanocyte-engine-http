@@ -30,11 +30,8 @@ class MessagesController
 
     route           = @_parseIfPossible req.header 'X-MESHBLU-ROUTE'
     forwardedRoutes = @_parseIfPossible req.header 'X-MESHBLU-FORWARDED-ROUTES'
-    eventType     = _.first(route)?.type
-
     message  = req.body ? {}
     message.fromUuid ?= @_getFromUuidFromRoute route
-
     @client.get "request-queue-name:#{flowId}", (error, requestQueue) =>
       console.error error.stack if error?
       return res.status(500).send() if error?
@@ -52,8 +49,7 @@ class MessagesController
             flowId: flowId
             instanceId: instanceId
             toNodeId: 'engine-input'
-            fromUuid: message.fromUuid # fromUuid must be both in envelope.metadata.fromUuid and  envelope.message.fromUuid
-            eventType: eventType
+            fromUuid: message.fromUuid # fromUuid must be both in envelope.metadata.fromUuid and  envelope.message.fromUuid            
             metadata:
               route: route
               forwardedRoutes: forwardedRoutes
