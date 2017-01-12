@@ -15,7 +15,8 @@ expressVersion     = require 'express-package-version'
 redisClient = redis.createClient process.env.REDIS_URI, dropBufferSupport: true
 client = new RedisNS 'nanocyte-engine', redisClient
 
-messagesController = new MessagesController {client}
+maxQueueLength = process.env.MAX_QUEUE_LENGTH || 1000
+messagesController = new MessagesController {client,maxQueueLength}
 
 PORT  = process.env.PORT ? 80
 octobluRaven = new OctobluRaven()

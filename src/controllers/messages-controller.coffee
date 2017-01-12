@@ -2,18 +2,11 @@ _ = require 'lodash'
 debug = require('debug')('nanocyte-engine-http:messages-controller')
 
 class MessagesController
-  constructor: ({@client}={}) ->
-    @maxQueueLength = 0
-    @updateMaxQueueLength()
-    @interval = setInterval @updateMaxQueueLength, 60*1000
-
-  updateMaxQueueLength: (callback=->) =>
-    @client.get 'request:max-queue-length', (error, result) =>
-      @maxQueueLength = parseInt(result ? 0)
-      callback error
+  constructor: ({ @client, @maxQueueLength }={}) ->
+    @maxQueueLength ?= 1000
+    debug 'using maxQueueLength', 1000
 
   _checkMaxQueueLength: ({requestQueue}, callback) =>
-    return callback() unless @maxQueueLength > 0
     @client.llen requestQueue, (error, queueLength) =>
       return callback error if error?
       return callback() if queueLength <= @maxQueueLength

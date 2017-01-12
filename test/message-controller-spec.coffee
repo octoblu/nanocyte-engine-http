@@ -10,7 +10,7 @@ describe 'MessagesController', ->
     @res =
       status: sinon.spy => @res
       end: sinon.spy => @res
-    @sut = new MessagesController client: @client
+    @sut = new MessagesController client: @client, maxQueueLength: 1
 
   context 'when given a non-matching flowid', ->
     beforeEach (done) ->
@@ -63,16 +63,10 @@ describe 'MessagesController', ->
 
   context 'when max-queue-length is exceeded', ->
     beforeEach (done) ->
-      @client.set 'request:max-queue-length', 1, done
-
-    beforeEach (done) ->
       @client.lpush 'request:queue', 'foo', done
 
     beforeEach (done) ->
       @client.lpush 'request:queue', 'foo', done
-
-    beforeEach (done) ->
-      @sut.updateMaxQueueLength done
 
     beforeEach (done) ->
       req =
@@ -82,7 +76,6 @@ describe 'MessagesController', ->
 
       req.header.withArgs('X-MESHBLU-UUID').returns 'exceeded'
       @res.send = => done()
-
       @sut.create req, @res
 
     it 'should send a 503', ->
