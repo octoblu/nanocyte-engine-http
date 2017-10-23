@@ -1,6 +1,6 @@
 {
   "name": "nanocyte-engine-http",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "HTTP server for Nanocyte that dumps messages into a queue",
   "main": "server.js",
   "scripts": {
